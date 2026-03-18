@@ -42,19 +42,43 @@ function classifyTopic(item) {
   return '其他判断'
 }
 
-function DetailModal({ item, onClose }) {
+function slugify(text = '') {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+}
+
+function toOpinionPath(item) {
+  return `#/opinion/${item.id}`
+}
+
+function setHash(path) {
+  window.location.hash = path
+}
+
+function parseHash() {
+  const hash = window.location.hash || '#/'
+  const clean = hash.replace(/^#/, '') || '/'
+  const parts = clean.split('/').filter(Boolean)
+  if (parts[0] === 'opinion' && parts[1]) {
+    return { type: 'opinion', id: parts[1] }
+  }
+  return { type: 'home' }
+}
+
+function DetailView({ item, onBack }) {
   if (!item) return null
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-head">
-          <div>
-            <div className="section-kicker">观点详情</div>
-            <h2>{item.title}</h2>
-          </div>
-          <button className="ghost-btn" onClick={onClose}>关闭</button>
-        </div>
-
+    <div className="detail-page editorial-panel">
+      <div className="detail-head">
+        <button className="ghost-btn" onClick={onBack}>返回列表</button>
+        <a className="ghost-btn" href={toOpinionPath(item)}>复制当前链接</a>
+      </div>
+      <div className="detail-title-block">
+        <div className="section-kicker">观点详情</div>
+        <h1>{item.title}</h1>
         <div className="meta-grid">
           <span>主题：{item.topic}</span>
           <span>分类：{item.category || '未分类'}</span>
@@ -63,15 +87,15 @@ function DetailModal({ item, onClose }) {
           <span>总分：{item.totalScore ?? 0}</span>
           <span>发布时间：{item.publishTime || '未知'}</span>
         </div>
+      </div>
 
-        {item.summary && <section><h3>一句话总结</h3><p>{item.summary}</p></section>}
-        {item.judgment && <section><h3>核心判断</h3><p>{item.judgment}</p></section>}
-        {item.view && <section><h3>我的观点</h3><p>{item.view}</p></section>}
-        {item.excerpt && <section><h3>原文摘要</h3><p>{item.excerpt}</p></section>}
+      {item.summary && <section><h3>一句话总结</h3><p>{item.summary}</p></section>}
+      {item.judgment && <section><h3>核心判断</h3><p>{item.judgment}</p></section>}
+      {item.view && <section><h3>我的观点</h3><p>{item.view}</p></section>}
+      {item.excerpt && <section><h3>原文摘要</h3><p>{item.excerpt}</p></section>}
 
-        <div className="modal-actions">
-          {item.url ? <a className="primary-btn" href={item.url} target="_blank" rel="noreferrer">查看原文</a> : null}
-        </div>
+      <div className="modal-actions">
+        {item.url ? <a className="primary-btn" href={item.url} target="_blank" rel="noreferrer">查看原文</a> : null}
       </div>
     </div>
   )
@@ -103,19 +127,29 @@ export default function App() {
   const [opportunity, setOpportunity] = useState('全部')
   const [source, setSource] = useState('全部')
   const [topic, setTopic] = useState('全部')
-  const [selected, setSelected] = useState(null)
+  const [route, setRoute] = useState(parseHash())
 
   useEffect(() => {
     fetch('./opinions.json')
       .then((r) => r.json())
       .then((raw) => {
-        const items = (raw.items || []).map((item) => ({ ...item, topic: classifyTopic(item) }))
+        const items = (raw.items || []).map((item) => ({
+          ...item,
+          topic: classifyTopic(item),
+          slug: slugify(item.title),
+        }))
         setData({ ...raw, items })
       })
       .catch((err) => {
         console.error(err)
         setData({ summary: null, items: [] })
       })
+  }, [])
+
+  useEffect(() => {
+    const handler = () => setRoute(parseHash())
+    window.addEventListener('hashchange', handler)
+    return () => window.removeEventListener('hashchange', handler)
   }, [])
 
   const filters = useMemo(() => {
@@ -155,6 +189,15 @@ export default function App() {
     }).filter((x) => x.count > 0)
   }, [filtered])
 
+  const activeItem = useMemo(() => {
+    if (route.type !== 'opinion') return null
+    return (data.items || []).find((item) => item.id === route.id) || null
+  }, [route, data])
+
+  if (route.type === 'opinion' && activeItem) {
+    return <div className="page-shell"><DetailView item={activeItem} onBack={() => setHash('/')} /></div>
+  }
+
   return (
     <div className="page-shell">
       <header className="hero">
@@ -193,7 +236,7 @@ export default function App() {
         </div>
         <div className="topic-grid">
           {topicPanels.map((panel) => (
-            <article key={panel.key} className="topic-panel" onClick={() => panel.lead && setSelected(panel.lead)}>
+            <article key={panel.key} className="topic-panel" onClick={() => panel.lead && setHash(`/opinion/${panel.lead.id}`)}>
               <div className="topic-top">
                 <span className="topic-name">{panel.key}</span>
                 <strong>{panel.count}</strong>
@@ -213,17 +256,13 @@ export default function App() {
           onChange={(e) => setQuery(e.target.value)}
         />
         <select value={topic} onChange={(e) => setTopic(e.target.value)}>
-          {filters.topics.map((x) => <option key={x}>{x}</option>)}
-        </select>
+          {filters.topics.map((x) => <option key={x}>{x}</option>)}</select>
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          {filters.categories.map((x) => <option key={x}>{x}</option>)}
-        </select>
+          {filters.categories.map((x) => <option key={x}>{x}</option>)}</select>
         <select value={opportunity} onChange={(e) => setOpportunity(e.target.value)}>
-          {filters.opportunities.map((x) => <option key={x}>{x}</option>)}
-        </select>
+          {filters.opportunities.map((x) => <option key={x}>{x}</option>)}</select>
         <select value={source} onChange={(e) => setSource(e.target.value)}>
-          {filters.sources.map((x) => <option key={x}>{x}</option>)}
-        </select>
+          {filters.sources.map((x) => <option key={x}>{x}</option>)}</select>
       </section>
 
       <section className="feature-section">
@@ -235,7 +274,7 @@ export default function App() {
         </div>
         <div className="feature-grid">
           {featured.map((item, index) => (
-            <article key={item.id} className={`feature-card feature-${index + 1}`} onClick={() => setSelected(item)}>
+            <article key={item.id} className={`feature-card feature-${index + 1}`} onClick={() => setHash(`/opinion/${item.id}`)}>
               <div className={`score-badge ${scoreColor(item.totalScore)}`}>Score {item.totalScore || 0}</div>
               <h3>{item.title}</h3>
               <p>{truncate(item.summary || item.judgment, 180)}</p>
@@ -256,13 +295,11 @@ export default function App() {
       </section>
       <section className="grid">
         {filtered.map((item) => (
-          <OpinionCard key={item.id} item={item} onOpen={setSelected} />
+          <OpinionCard key={item.id} item={item} onOpen={() => setHash(`/opinion/${item.id}`)} />
         ))}
       </section>
 
       {!filtered.length && <div className="empty">没有匹配结果，换个主题词或筛选条件试试。</div>}
-
-      <DetailModal item={selected} onClose={() => setSelected(null)} />
     </div>
   )
 }
