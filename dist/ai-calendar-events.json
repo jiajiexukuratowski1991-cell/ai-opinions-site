@@ -22,7 +22,7 @@
     "location": "Mountain View / Online",
     "source": "Google",
     "url": "https://io.google/",
-    "description": "Google 年度开发者大会，AI 模型、Gemini、搜索、Android 与开发工具通常会有重要更新。",
+    "description": "Google I/O 官网已指向 2026 页面，但公开抓取内容尚未稳定给出完整日期说明；暂保留为预计时间窗口，重点关注 Gemini、搜索、Android 与开发工具更新。",
     "priority": "A"
   },
   {
@@ -35,7 +35,7 @@
     "location": "San Francisco / Online",
     "source": "Microsoft",
     "url": "https://build.microsoft.com/",
-    "description": "微软年度开发者大会，Copilot、Azure AI、开发框架与企业 AI 通常会有重点发布。",
+    "description": "Microsoft Build 官方主页已明确标注 2026 年 6 月 2 日至 3 日，地点为 San Francisco / online。",
     "priority": "S"
   },
   {
@@ -48,7 +48,7 @@
     "location": "Cupertino / Online",
     "source": "Apple",
     "url": "https://developer.apple.com/wwdc/",
-    "description": "Apple 年度开发者大会，端侧 AI、系统能力与开发者生态值得关注。",
+    "description": "Apple 当前公开页面仍主要落在 WWDC25 回顾内容，尚未出现 WWDC 2026 明确会期；保留为高概率时间窗口。",
     "priority": "A"
   },
   {
@@ -61,8 +61,8 @@
     "location": "San Francisco / Online",
     "source": "OpenAI",
     "url": "https://openai.com/",
-    "description": "OpenAI 开发者大会时间窗口预估，重点关注模型、API、agent 与工具链更新。",
-    "priority": "A"
+    "description": "OpenAI 尚未公开 2026 DevDay 会期；该条目基于历年节奏保留为预估窗口，仅作中期关注，不视为硬日程。",
+    "priority": "B"
   },
   {
     "id": "aws-reinvent-2026",
@@ -71,63 +71,11 @@
     "title": "AWS re:Invent 2026",
     "type": "conference",
     "status": "confirmed",
-    "location": "Las Vegas",
+    "location": "Las Vegas, NV",
     "source": "AWS",
     "url": "https://aws.amazon.com/events/reinvent/",
-    "description": "AWS 年度大会，生成式 AI、Bedrock、推理服务与云上基础设施更新值得关注。",
+    "description": "AWS re:Invent 官方页面已明确标注 2026 年 11 月 30 日至 12 月 4 日在 Las Vegas 举办。",
     "priority": "S"
-  },
-  {
-    "id": "anthropic-major-model-window-2026",
-    "date": "2026-03-25",
-    "endDate": "2026-03-25",
-    "title": "Anthropic 重要模型更新窗口（观察）",
-    "type": "model",
-    "status": "official-watch",
-    "location": "Online",
-    "source": "Anthropic",
-    "url": "https://www.anthropic.com/news",
-    "description": "用于跟踪 Anthropic 在 2026 年春季可能出现的重要模型或平台更新窗口。",
-    "priority": "A"
-  },
-  {
-    "id": "openai-major-model-window-2026-spring",
-    "date": "2026-04-15",
-    "endDate": "2026-04-15",
-    "title": "OpenAI 春季模型更新窗口（观察）",
-    "type": "model",
-    "status": "official-watch",
-    "location": "Online",
-    "source": "OpenAI",
-    "url": "https://openai.com/news",
-    "description": "用于集中关注 OpenAI 在春季可能出现的重要模型、API 或 agent 能力升级。",
-    "priority": "A"
-  },
-  {
-    "id": "google-gemini-update-window-2026",
-    "date": "2026-05-19",
-    "endDate": "2026-05-20",
-    "title": "Gemini 重要更新窗口（随 Google I/O）",
-    "type": "model",
-    "status": "tentative",
-    "location": "Online",
-    "source": "Google",
-    "url": "https://io.google/",
-    "description": "重点关注 Gemini、搜索智能体、Web AI 与开发工具链更新。",
-    "priority": "B"
-  },
-  {
-    "id": "meta-ai-model-window-2026",
-    "date": "2026-09-15",
-    "endDate": "2026-09-15",
-    "title": "Meta AI 模型更新窗口（观察）",
-    "type": "model",
-    "status": "official-watch",
-    "location": "Online",
-    "source": "Meta",
-    "url": "https://ai.meta.com/blog/",
-    "description": "用于追踪 Llama 与 Meta AI 生态的重要模型、开放能力或 agent 更新窗口。",
-    "priority": "A"
   },
   {
     "id": "ces-2027-window",
@@ -139,7 +87,7 @@
     "location": "Las Vegas",
     "source": "CTA",
     "url": "https://www.ces.tech/",
-    "description": "消费电子展，但 AI PC、机器人、边缘 AI 与硬件趋势经常在 CES 前后集中出现。",
+    "description": "CES 2027 仍属于远期推测窗口。保留它是因为 AI PC、机器人和边缘硬件常在 CES 前后集中释放，但权重不宜过高。",
     "priority": "B"
   },
   {
@@ -152,7 +100,7 @@
     "location": "San Jose / Online",
     "source": "NVIDIA",
     "url": "https://www.nvidia.com/gtc/",
-    "description": "预计延续 3 月中旬窗口，是 2027 年最值得提前关注的 AI 基础设施事件之一。",
+    "description": "基于 GTC 历史节奏保留的远期预估条目；来源是官方大会页，但 2027 会期尚未官宣。",
     "priority": "A"
   },
   {
@@ -165,8 +113,8 @@
     "location": "Mountain View / Online",
     "source": "Google",
     "url": "https://io.google/",
-    "description": "预计仍在 5 月中下旬，关注 Gemini、搜索、代理式工作流与 Web AI 能力。",
-    "priority": "A"
+    "description": "远期预估条目，来源保留官方大会页，但 2027 年会期尚未发布。",
+    "priority": "B"
   },
   {
     "id": "microsoft-build-2027-window",
@@ -178,8 +126,8 @@
     "location": "Seattle / Online",
     "source": "Microsoft",
     "url": "https://build.microsoft.com/",
-    "description": "预计仍位于 6 月前后，重点关注 Copilot、Azure AI 与企业 agent 平台。",
-    "priority": "A"
+    "description": "远期预估条目，官方站点来源可信，但 2027 会期尚未正式公布。",
+    "priority": "B"
   },
   {
     "id": "wwdc-2027-window",
@@ -191,8 +139,8 @@
     "location": "Cupertino / Online",
     "source": "Apple",
     "url": "https://developer.apple.com/wwdc/",
-    "description": "预计在 6 月上旬，重点看端侧 AI、系统级能力与设备协同。",
-    "priority": "A"
+    "description": "远期预估条目，Apple 官方 WWDC 页面可作为最终落地页，但当前尚无 2027 官宣信息。",
+    "priority": "B"
   },
   {
     "id": "openai-devday-2027-window",
@@ -204,8 +152,8 @@
     "location": "San Francisco / Online",
     "source": "OpenAI",
     "url": "https://openai.com/",
-    "description": "按历年节奏预估的开发者大会时间窗口。",
-    "priority": "A"
+    "description": "远期预估条目，仅保留作为战略关注，不应与官方确认事件混淆。",
+    "priority": "B"
   },
   {
     "id": "aws-reinvent-2027-window",
@@ -217,8 +165,8 @@
     "location": "Las Vegas",
     "source": "AWS",
     "url": "https://aws.amazon.com/events/reinvent/",
-    "description": "预计 11 月底至 12 月初，关注生成式 AI 与云服务基础设施方向。",
-    "priority": "A"
+    "description": "远期预估条目，官方大会页可信，但 2027 会期尚未发布。",
+    "priority": "B"
   },
   {
     "id": "aaai-2026",
@@ -230,7 +178,7 @@
     "location": "Singapore EXPO, Singapore",
     "source": "AAAI",
     "url": "https://aaai.org/conference/aaai/aaai-26/",
-    "description": "第 40 届 AAAI 人工智能大会，覆盖主会、special tracks、workshops、tutorials 等，是 2026 年最重要的学术 AI 大会之一。",
+    "description": "第 40 届 AAAI 人工智能大会，覆盖主会、special tracks、workshops、tutorials 等，是 2026 年重要学术 AI 大会之一。",
     "priority": "S"
   },
   {
@@ -243,21 +191,8 @@
     "location": "Bremen, Germany",
     "source": "IJCAI",
     "url": "https://2026.ijcai.org/",
-    "description": "IJCAI-ECAI 2026 将于德国 Bremen 举办，重点覆盖 Human-Centered AI、AI for Social Good、AI and Robotics、AI and Health 等方向。",
+    "description": "IJCAI-ECAI 2026 官方站已落地，会期与举办地明确。",
     "priority": "S"
-  },
-  {
-    "id": "openai-news-watch-2026-spring",
-    "date": "2026-04-01",
-    "endDate": "2026-04-01",
-    "title": "OpenAI News 春季发布观察点",
-    "type": "model",
-    "status": "official-watch",
-    "location": "Online",
-    "source": "OpenAI",
-    "url": "https://openai.com/news",
-    "description": "用于持续跟踪 OpenAI 官方新闻页的春季模型、API、agent 与产品能力更新。",
-    "priority": "A"
   },
   {
     "id": "openai-gpt-5-family-2026-03-05",
@@ -269,47 +204,8 @@
     "location": "Online",
     "source": "OpenAI",
     "url": "https://academy.openai.com/public/resources/latest-model",
-    "description": "OpenAI Academy 页面显示，2026 年 3 月 5 日发布 GPT-5.3 Instant、GPT-5.4 Thinking 和 GPT-5.4 Pro，覆盖从快速日常任务到高强度专业工作的不同能力档位。",
+    "description": "OpenAI Academy 页面显示，2026 年 3 月 5 日发布 GPT-5.3 Instant、GPT-5.4 Thinking 和 GPT-5.4 Pro。",
     "priority": "S"
-  },
-  {
-    "id": "anthropic-news-watch-2026-spring",
-    "date": "2026-03-25",
-    "endDate": "2026-03-25",
-    "title": "Anthropic News 春季发布观察点",
-    "type": "model",
-    "status": "official-watch",
-    "location": "Online",
-    "source": "Anthropic",
-    "url": "https://www.anthropic.com/news",
-    "description": "用于持续跟踪 Anthropic 官方新闻页的模型、平台与 Claude 生态更新。",
-    "priority": "A"
-  },
-  {
-    "id": "meta-ai-blog-watch-2026-fall",
-    "date": "2026-09-15",
-    "endDate": "2026-09-15",
-    "title": "Meta AI Blog 秋季发布观察点",
-    "type": "model",
-    "status": "official-watch",
-    "location": "Online",
-    "source": "Meta",
-    "url": "https://ai.meta.com/blog/",
-    "description": "用于持续跟踪 Meta AI Blog 上与 Llama、开放模型生态和 agent 相关的重要更新。",
-    "priority": "A"
-  },
-  {
-    "id": "ai-deadlines-2026-watch",
-    "date": "2026-05-04",
-    "endDate": "2026-05-08",
-    "title": "AI Deadlines 学术会议跟踪池（2026）",
-    "type": "conference",
-    "status": "tentative",
-    "location": "Global",
-    "source": "AI Deadlines",
-    "url": "http://aideadlines.org/",
-    "description": "作为学术 AI 会议候选池来源，用于发现 ICLR、ICML、NeurIPS 等重要事件，再回到官方站点确认。",
-    "priority": "A"
   },
   {
     "id": "icml-2026",
@@ -321,7 +217,7 @@
     "location": "COEX Convention & Exhibition Center, Seoul, South Korea",
     "source": "ICML",
     "url": "https://icml.cc/Conferences/2026",
-    "description": "ICML 2026 官方已确认于 7 月 6 日至 11 日在首尔举行，是机器学习领域最重要的学术大会之一。",
+    "description": "ICML 2026 官方已确认于 7 月 6 日至 11 日在首尔举行。",
     "priority": "S"
   },
   {
@@ -334,7 +230,7 @@
     "location": "Rio de Janeiro, Brazil",
     "source": "ICLR",
     "url": "https://iclr.cc/Conferences/FutureMeetings",
-    "description": "ICLR 官方 Future Meetings 页面已确认：ICLR 2026 将于 4 月 23 日至 27 日在巴西里约热内卢举行。",
+    "description": "ICLR Future Meetings 官方页面已确认 2026 年会期与地点。",
     "priority": "S"
   },
   {
@@ -347,21 +243,8 @@
     "location": "Sydney, Australia",
     "source": "NeurIPS",
     "url": "https://nips.cc/Conferences/FutureMeetings",
-    "description": "NeurIPS 官方 Future Meetings 页面已确认：NeurIPS 2026 将于 12 月 6 日至 12 日在悉尼举行，并将包含卫星会场。",
+    "description": "NeurIPS Future Meetings 官方页面已确认 2026 年会期与地点。",
     "priority": "S"
-  },
-  {
-    "id": "google-ai-blog-watch-2026",
-    "date": "2026-05-01",
-    "endDate": "2026-05-01",
-    "title": "Google AI Blog 官方更新观察点",
-    "type": "model",
-    "status": "official-watch",
-    "location": "Online",
-    "source": "Google",
-    "url": "https://blog.google/innovation-and-ai/technology/ai/",
-    "description": "用于持续跟踪 Google AI / Gemini / Developers 相关官方更新，作为模型与平台发布的重要信号源。",
-    "priority": "A"
   },
   {
     "id": "anthropic-claude-opus-4-6",
@@ -373,7 +256,7 @@
     "location": "Online",
     "source": "Anthropic",
     "url": "https://www.anthropic.com/news",
-    "description": "Anthropic 官方新闻页显示，2026 年 2 月 5 日发布 Claude Opus 4.6，重点强化 agentic coding、computer use、tool use、search 与 finance 表现。",
+    "description": "Anthropic 官方新闻页显示，2026 年 2 月 5 日发布 Claude Opus 4.6。",
     "priority": "S"
   },
   {
@@ -386,20 +269,7 @@
     "location": "Online",
     "source": "Mistral",
     "url": "https://mistral.ai/news",
-    "description": "Mistral AI 官方新闻页显示，2026 年 3 月 17 日推出 Forge，用于帮助企业构建基于私有知识的 frontier-grade AI models。",
+    "description": "Mistral AI 官方新闻页显示，2026 年 3 月 17 日推出 Forge。",
     "priority": "S"
-  },
-  {
-    "id": "xai-news-watch-2026",
-    "date": "2026-06-01",
-    "endDate": "2026-06-01",
-    "title": "xAI 官方更新观察点",
-    "type": "model",
-    "status": "official-watch",
-    "location": "Online",
-    "source": "xAI",
-    "url": "https://x.ai/news",
-    "description": "用于持续跟踪 xAI 官方新闻页；当前抓取被站点限流拦截，先保留为官方观察源。",
-    "priority": "A"
   }
 ]

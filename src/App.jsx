@@ -139,6 +139,17 @@ function formatDateLabel(dateStr) {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`
 }
 
+function getEventPhase(event, todayKey) {
+  if (!event) return { key: 'unknown', label: '未知' }
+  if (event.date <= todayKey && event.effectiveEndDate >= todayKey) {
+    return { key: 'live', label: '进行中' }
+  }
+  if (event.date > todayKey) {
+    return { key: 'upcoming', label: '即将开始' }
+  }
+  return { key: 'past', label: '已结束' }
+}
+
 function buildCalendarDays(year, month) {
   const first = new Date(Date.UTC(year, month, 1))
   const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
@@ -153,7 +164,96 @@ function buildCalendarDays(year, month) {
   return cells
 }
 
-function AICalendar({ events, standalone = false, onBack }) {
+function CalendarDayContent({ date, displayMonth, dayMetaMap }) {
+  const isOutside = date.getUTCMonth() !== displayMonth.getUTCMonth() || date.getUTCFullYear() !== displayMonth.getUTCFullYear()
+  if (isOutside) return <span>{date.getUTCDate()}</span>
+
+  const key = date.toISOString().slice(0, 10)
+  const meta = dayMetaMap.get(key)
+  const tooltip = meta
+    ? `${meta.count} 个事件${meta.hasS ? ' · 含 S 级重点' : meta.hasA ? ' · 含 A 级重点' : ''}\n${meta.titles.slice(0, 3).join('\n')}`
+    : ''
+
+  return <span title={tooltip}>{date.getUTCDate()}</span>
+}
+
+function CalendarSources({ sources }) {
+  if (!sources) return null
+
+  return (
+    <section className="calendar-sources editorial-panel">
+      <div className="section-head split compact-head">
+        <div>
+          <div className="section-kicker">Sources</div>
+          <h2>数据来源说明</h2>
+        </div>
+        <span>{(sources.primarySources?.length || 0) + (sources.auxiliarySources?.length || 0)} 个来源</span>
+      </div>
+
+      <div className="calendar-source-policy">
+        <div className="calendar-source-policy-card">
+          <span>硬源规则</span>
+          <p>{sources.policy?.primaryRule}</p>
+        </div>
+        <div className="calendar-source-policy-card">
+          <span>辅助源规则</span>
+          <p>{sources.policy?.auxiliaryRule}</p>
+        </div>
+        <div className="calendar-source-policy-card">
+          <span>升级规则</span>
+          <p>{sources.policy?.promotionRule}</p>
+        </div>
+      </div>
+
+      <div className="calendar-source-grid">
+        <section className="calendar-source-column">
+          <div className="calendar-source-head">
+            <div className="calendar-side-kicker">Primary sources</div>
+            <h3>主源 / 官方硬源</h3>
+            <p>用于确认硬日期、会期、发布日。只有这层能直接支撑 confirmed。</p>
+          </div>
+          <div className="calendar-source-list">
+            {(sources.primarySources || []).map((item) => (
+              <a key={item.name} className="calendar-source-card primary-source-card" href={item.url} target="_blank" rel="noreferrer">
+                <div className="calendar-chip-row">
+                  <span className="calendar-badge confirmed">官方</span>
+                </div>
+                <h4>{item.name}</h4>
+                <p>{item.url}</p>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section className="calendar-source-column">
+          <div className="calendar-source-head">
+            <div className="calendar-side-kicker">Auxiliary sources</div>
+            <h3>辅助情报源</h3>
+            <p>用于发现事件、补背景、找热点与选题，但不直接作为 confirmed 唯一依据。</p>
+          </div>
+          <div className="calendar-source-list">
+            {(sources.auxiliarySources || []).map((item) => (
+              <article key={item.name} className="calendar-source-card auxiliary-source-card">
+                <div className="calendar-chip-row">
+                  <span className="calendar-badge tentative">辅助</span>
+                  <span className="calendar-badge type-badge">{item.channel === 'wechat' ? '微信公众号' : item.channel}</span>
+                  <span className="calendar-badge priority-badge priority-b">{item.confidence}</span>
+                </div>
+                <h4>{item.name}</h4>
+                <p>{item.notes}</p>
+                <div className="calendar-source-tags">
+                  {(item.role || []).map((role) => <span key={role}>{role}</span>)}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </section>
+  )
+}
+
+function AICalendar({ events, sources, standalone = false, onBack }) {
   const defaultMonth = useMemo(() => {
     const now = new Date()
     return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
@@ -163,41 +263,113 @@ function AICalendar({ events, standalone = false, onBack }) {
   const [statusFilter, setStatusFilter] = useState('all')
   const [yearFilter, setYearFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
+  const [priorityFilter, setPriorityFilter] = useState('all')
+  const [hidePastEvents, setHidePastEvents] = useState(true)
+
+  const todayKey = useMemo(() => {
+    const now = new Date()
+    return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}`
+  }, [])
 
   const normalizedEvents = useMemo(() => (events || []).map((e) => ({
     ...e,
     dateObj: new Date(`${e.date}T00:00:00Z`),
+    effectiveEndDate: e.endDate || e.date,
   })), [events])
 
   const availableYears = useMemo(() => [...new Set(normalizedEvents.map((e) => String(e.dateObj.getUTCFullYear())))].sort(), [normalizedEvents])
   const availableTypes = useMemo(() => [...new Set(normalizedEvents.map((e) => e.type))].sort(), [normalizedEvents])
-
-  useEffect(() => {
-    if (normalizedEvents.length && !selectedDate) {
-      setSelectedDate(normalizedEvents[0].dateObj)
-    }
-  }, [normalizedEvents, selectedDate])
+  const availablePriorities = useMemo(() => [...new Set(normalizedEvents.map((e) => e.priority || 'B'))].sort(), [normalizedEvents])
 
   const filteredEvents = useMemo(() => normalizedEvents
     .filter((e) => (statusFilter === 'all' || e.status === statusFilter))
     .filter((e) => (yearFilter === 'all' || String(e.dateObj.getUTCFullYear()) === yearFilter))
-    .filter((e) => (typeFilter === 'all' || e.type === typeFilter)), [normalizedEvents, statusFilter, yearFilter, typeFilter])
+    .filter((e) => (typeFilter === 'all' || e.type === typeFilter))
+    .filter((e) => (priorityFilter === 'all' || (e.priority || 'B') === priorityFilter))
+    .filter((e) => (!hidePastEvents || e.effectiveEndDate >= todayKey)), [normalizedEvents, statusFilter, yearFilter, typeFilter, priorityFilter, hidePastEvents, todayKey])
+
+  const sortedEvents = useMemo(() => [...filteredEvents].sort((a, b) => a.dateObj - b.dateObj), [filteredEvents])
+  const liveOrUpcomingEvents = useMemo(() => sortedEvents.filter((e) => e.effectiveEndDate >= todayKey), [sortedEvents, todayKey])
+  const anchorEvents = liveOrUpcomingEvents.length ? liveOrUpcomingEvents : sortedEvents
+  const anchorEvent = anchorEvents[0] || null
+
+  useEffect(() => {
+    if (!filteredEvents.length) {
+      setSelectedDate(null)
+      return
+    }
+
+    const selectedKey = selectedDate ? selectedDate.toISOString().slice(0, 10) : null
+    const hasSelectedDate = selectedKey && filteredEvents.some((e) => e.date === selectedKey)
+
+    if (!hasSelectedDate && anchorEvent) {
+      setSelectedDate(anchorEvent.dateObj)
+    }
+  }, [filteredEvents, selectedDate, anchorEvent])
+
+  useEffect(() => {
+    if (!anchorEvent) return
+
+    const monthHasEvents = filteredEvents.some((e) => {
+      return e.dateObj.getUTCFullYear() === month.getUTCFullYear() && e.dateObj.getUTCMonth() === month.getUTCMonth()
+    })
+
+    if (!monthHasEvents) {
+      setMonth(new Date(Date.UTC(anchorEvent.dateObj.getUTCFullYear(), anchorEvent.dateObj.getUTCMonth(), 1)))
+    }
+  }, [filteredEvents, month, anchorEvent])
 
   const monthEvents = useMemo(() => filteredEvents.filter((e) => {
     return e.dateObj.getUTCFullYear() === month.getUTCFullYear() && e.dateObj.getUTCMonth() === month.getUTCMonth()
   }), [filteredEvents, month])
 
   const eventDates = useMemo(() => monthEvents.map((e) => e.dateObj), [monthEvents])
+  const dayMetaMap = useMemo(() => {
+    const map = new Map()
+    monthEvents.forEach((event) => {
+      const key = event.dateObj.toISOString().slice(0, 10)
+      const existing = map.get(key) || { count: 0, hasS: false, hasA: false, titles: [] }
+      existing.count += 1
+      existing.hasS = existing.hasS || (event.priority || 'B') === 'S'
+      existing.hasA = existing.hasA || (event.priority || 'B') === 'A'
+      existing.titles.push(event.title)
+      map.set(key, existing)
+    })
+    return map
+  }, [monthEvents])
+  const sPriorityDates = useMemo(() => {
+    return [...new Set(monthEvents.filter((e) => (e.priority || 'B') === 'S').map((e) => e.dateObj.toISOString().slice(0, 10)))].map((date) => new Date(`${date}T00:00:00Z`))
+  }, [monthEvents])
+  const aPriorityDates = useMemo(() => {
+    const sSet = new Set(monthEvents.filter((e) => (e.priority || 'B') === 'S').map((e) => e.dateObj.toISOString().slice(0, 10)))
+    return [...new Set(monthEvents.filter((e) => (e.priority || 'B') === 'A' && !sSet.has(e.dateObj.toISOString().slice(0, 10))).map((e) => e.dateObj.toISOString().slice(0, 10)))].map((date) => new Date(`${date}T00:00:00Z`))
+  }, [monthEvents])
 
   const selectedEvents = useMemo(() => {
-    const target = selectedDate || monthEvents[0]?.dateObj
+    const target = selectedDate || anchorEvent?.dateObj || monthEvents[0]?.dateObj
     if (!target) return []
-    return monthEvents.filter((e) => e.dateObj.toISOString().slice(0, 10) === target.toISOString().slice(0, 10))
-  }, [monthEvents, selectedDate])
+    const dayMatches = monthEvents
+      .filter((e) => e.dateObj.toISOString().slice(0, 10) === target.toISOString().slice(0, 10))
+      .sort((a, b) => {
+        const priorityRank = { S: 0, A: 1, B: 2 }
+        const aUpcoming = a.effectiveEndDate >= todayKey ? 0 : 1
+        const bUpcoming = b.effectiveEndDate >= todayKey ? 0 : 1
+        if (aUpcoming !== bUpcoming) return aUpcoming - bUpcoming
+        return (priorityRank[a.priority || 'B'] ?? 9) - (priorityRank[b.priority || 'B'] ?? 9)
+      })
 
-  const upcomingEvents = useMemo(() => filteredEvents
-    .sort((a, b) => a.dateObj - b.dateObj)
-    .slice(0, 8), [filteredEvents])
+    if (dayMatches.length) return dayMatches
+
+    if (anchorEvent && target.toISOString().slice(0, 10) !== anchorEvent.dateObj.toISOString().slice(0, 10)) {
+      return monthEvents
+        .filter((e) => e.date === anchorEvent.date)
+        .sort((a, b) => a.dateObj - b.dateObj)
+    }
+
+    return []
+  }, [monthEvents, selectedDate, anchorEvent, todayKey])
+
+  const upcomingEvents = useMemo(() => anchorEvents.slice(0, 8), [anchorEvents])
 
   const monthConfirmedCount = monthEvents.filter((e) => e.status === 'confirmed').length
   const monthWatchCount = monthEvents.filter((e) => e.status === 'official-watch').length
@@ -205,7 +377,10 @@ function AICalendar({ events, standalone = false, onBack }) {
   const selectedLabel = selectedEvents[0] ? formatDateLabel(selectedEvents[0].date) : `${month.getUTCFullYear()}-${String(month.getUTCMonth() + 1).padStart(2, '0')}`
   const monthTitle = `${month.getUTCFullYear()} ${MONTH_LABELS[month.getUTCMonth()]}`
   const markedDayCount = [...new Set(eventDates.map((date) => date.toISOString().slice(0, 10)))].length
-  const focusEvent = selectedEvents[0] || upcomingEvents[0] || null
+  const focusEvent = selectedEvents.find((event) => event.effectiveEndDate >= todayKey) || selectedEvents[0] || anchorEvent || null
+  const focusEventPhase = getEventPhase(focusEvent, todayKey)
+  const selectedConfirmedCount = selectedEvents.filter((e) => e.status === 'confirmed').length
+  const selectedHighPriorityCount = selectedEvents.filter((e) => (e.priority || 'B') === 'S' || (e.priority || 'B') === 'A').length
 
   return (
     <section className={`ai-calendar-block calendar-redesign ${standalone ? 'calendar-standalone' : ''}`}>
@@ -240,10 +415,10 @@ function AICalendar({ events, standalone = false, onBack }) {
       <div className="calendar-filterbar calendar-filter-shell editorial-panel">
         <div className="calendar-filtercopy">
           <strong>浏览维度</strong>
-          <p>先按年份、类型、确认状态收窄范围，再在月历里挑一天看重点事件。</p>
+          <p>先按年份、类型、优先级、确认状态收窄范围，再在月历里挑一天看重点事件。</p>
           <div className="calendar-signal-note">信号层级：已确认 = 官方硬日期；官方观察 = 官方源但仍在跟踪；预计 = 尚未完全落地的时间窗口。</div>
         </div>
-        <div className="calendar-filter-controls">
+        <div className="calendar-filter-controls calendar-filter-controls-4">
           <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)}>
             <option value="all">全部年份</option>
             {availableYears.map((year) => <option key={year} value={year}>{year}</option>)}
@@ -252,12 +427,20 @@ function AICalendar({ events, standalone = false, onBack }) {
             <option value="all">全部类型</option>
             {availableTypes.map((type) => <option key={type} value={type}>{type === 'conference' ? '大会' : type === 'model' ? '模型发布' : type === 'hardware' ? '硬件/终端' : type}</option>)}
           </select>
+          <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)}>
+            <option value="all">全部优先级</option>
+            {availablePriorities.map((priority) => <option key={priority} value={priority}>{priority} 级</option>)}
+          </select>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="all">全部事件</option>
             <option value="confirmed">仅已确认</option>
             <option value="official-watch">仅官方观察</option>
             <option value="tentative">仅预计窗口</option>
           </select>
+          <label className="calendar-toggle">
+            <input type="checkbox" checked={hidePastEvents} onChange={(e) => setHidePastEvents(e.target.checked)} />
+            <span>隐藏已过去事件</span>
+          </label>
         </div>
       </div>
 
@@ -281,8 +464,11 @@ function AICalendar({ events, standalone = false, onBack }) {
                 onMonthChange={setMonth}
                 selected={selectedDate}
                 onSelect={(date) => date && setSelectedDate(date)}
-                modifiers={{ hasEvent: eventDates }}
-                modifiersClassNames={{ hasEvent: 'rdp-day_hasEvent' }}
+                modifiers={{ hasEvent: eventDates, priorityS: sPriorityDates, priorityA: aPriorityDates }}
+                modifiersClassNames={{ hasEvent: 'rdp-day_hasEvent', priorityS: 'rdp-day_priorityS', priorityA: 'rdp-day_priorityA' }}
+                components={{
+                  Day: (props) => <CalendarDayContent {...props} displayMonth={month} dayMetaMap={dayMetaMap} />,
+                }}
                 showOutsideDays
                 weekStartsOn={1}
               />
@@ -306,7 +492,7 @@ function AICalendar({ events, standalone = false, onBack }) {
               <div className="calendar-rail-card rail-focus-card">
                 <span>当前焦点</span>
                 <strong>{focusEvent ? focusEvent.title : '暂无焦点事件'}</strong>
-                <p>{focusEvent ? `${formatDateLabel(focusEvent.date)} · ${focusEvent.source}` : '切换月份或筛选条件，找到更值得盯的事件。'}</p>
+                <p>{focusEvent ? `${formatDateLabel(focusEvent.date)} · ${focusEvent.source} · ${focusEventPhase.label}` : '切换月份或筛选条件，找到更值得盯的事件。'}</p>
               </div>
             </aside>
           </div>
@@ -323,15 +509,33 @@ function AICalendar({ events, standalone = false, onBack }) {
 
           <p className="calendar-side-summary">
             {selectedEvents.length
-              ? '这一天的重点事件放在下面，右侧只保留真正值得读的焦点信息。'
+              ? '优先展示这一天里仍在进行或接下来的重点事件，右侧只保留真正值得读的焦点信息。'
               : '当天暂无事件。你可以切换月份，或直接看下方 Upcoming 时间线。'}
           </p>
+
+          {selectedEvents.length ? (
+            <div className="calendar-day-snapshot">
+              <div className="calendar-day-stat">
+                <span>当天已确认</span>
+                <strong>{selectedConfirmedCount}</strong>
+              </div>
+              <div className="calendar-day-stat">
+                <span>高优先级</span>
+                <strong>{selectedHighPriorityCount}</strong>
+              </div>
+              <div className="calendar-day-stat day-source-stat">
+                <span>主要来源</span>
+                <strong>{Array.from(new Set(selectedEvents.map((event) => event.source))).join(' / ')}</strong>
+              </div>
+            </div>
+          ) : null}
 
           <div className="calendar-event-stack compact-event-stack">
             {selectedEvents.length ? selectedEvents.map((event) => (
               <a key={event.id} className="calendar-focus-card" href={event.url} target="_blank" rel="noreferrer">
                 <div className="calendar-focus-topline">
                   <div className="calendar-chip-row">
+                    <span className={`calendar-badge phase-badge phase-${getEventPhase(event, todayKey).key}`}>{getEventPhase(event, todayKey).label}</span>
                     <span className={`calendar-badge ${event.status}`}>{event.status === 'confirmed' ? '已确认' : event.status === 'official-watch' ? '官方观察' : '预计'}</span>
                     <span className={`calendar-badge priority-badge priority-${(event.priority || 'B').toLowerCase()}`}>{event.priority || 'B'}</span>
                     <span className="calendar-badge type-badge">{event.type === 'conference' ? '大会' : event.type === 'model' ? '模型发布' : event.type === 'hardware' ? '硬件/终端' : '事件'}</span>
@@ -356,7 +560,7 @@ function AICalendar({ events, standalone = false, onBack }) {
         <div className="section-head split compact-head">
           <div>
             <div className="section-kicker">Upcoming</div>
-            <h2>接下来值得盯的事件</h2>
+            <h2>进行中 / 接下来值得盯的事件</h2>
           </div>
           <span>{upcomingEvents.length} 条时间线</span>
         </div>
@@ -366,6 +570,7 @@ function AICalendar({ events, standalone = false, onBack }) {
               <div className="upcoming-date">{formatDateLabel(event.date)}</div>
               <div className="upcoming-main">
                 <div className="calendar-chip-row upcoming-chip-row">
+                  <span className={`calendar-badge phase-badge phase-${getEventPhase(event, todayKey).key}`}>{getEventPhase(event, todayKey).label}</span>
                   <span className={`calendar-badge ${event.status}`}>{event.status === 'confirmed' ? '已确认' : event.status === 'official-watch' ? '官方观察' : '预计'}</span>
                   <span className={`calendar-badge priority-badge priority-${(event.priority || 'B').toLowerCase()}`}>{event.priority || 'B'}</span>
                   <span className="calendar-badge type-badge">{event.type === 'conference' ? '大会' : event.type === 'model' ? '模型发布' : event.type === 'hardware' ? '硬件/终端' : '事件'}</span>
@@ -381,6 +586,8 @@ function AICalendar({ events, standalone = false, onBack }) {
           ))}
         </div>
       </section>
+
+      <CalendarSources sources={sources} />
     </section>
   )
 }
@@ -388,6 +595,7 @@ function AICalendar({ events, standalone = false, onBack }) {
 export default function App() {
   const [data, setData] = useState({ summary: null, opinions: [], articles: [] })
   const [calendarEvents, setCalendarEvents] = useState([])
+  const [calendarSources, setCalendarSources] = useState(null)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('全部')
   const [opportunity, setOpportunity] = useState('全部')
@@ -418,6 +626,16 @@ export default function App() {
       .catch((err) => {
         console.error(err)
         setCalendarEvents([])
+      })
+  }, [])
+
+  useEffect(() => {
+    fetch('./ai-calendar-sources.json')
+      .then((r) => r.json())
+      .then(setCalendarSources)
+      .catch((err) => {
+        console.error(err)
+        setCalendarSources(null)
       })
   }, [])
 
@@ -495,7 +713,7 @@ export default function App() {
   }
 
   if (route.type === 'calendar') {
-    return <div className="page-shell"><AICalendar events={calendarEvents} standalone onBack={() => setHash('/')} /></div>
+    return <div className="page-shell"><AICalendar events={calendarEvents} sources={calendarSources} standalone onBack={() => setHash('/')} /></div>
   }
 
   return (
@@ -525,7 +743,7 @@ export default function App() {
           <h2>查看 AI 日历</h2>
           <p>单独查看 2026–2027 年的重要 AI 事件、发布窗口与大会节点。</p>
         </div>
-        <button className="primary-btn">进入日历</button>
+        <button className="primary-btn calendar-entry-btn">进入日历</button>
       </section>
 
       <section className="signal-board">

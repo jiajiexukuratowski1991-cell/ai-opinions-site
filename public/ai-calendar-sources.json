@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "updatedAt": "2026-03-20",
+  "policy": {
+    "primaryRule": "日历硬日期、会期、发布日优先采用官方大会页、官方 news/blog、官方 future meetings 页面。",
+    "auxiliaryRule": "微信公众号仅用于发现事件、补充背景、寻找热点与二次验证线索，不直接作为 confirmed 事件唯一依据。",
+    "promotionRule": "若公众号提到某事件，只有找到对应官方页面、官方公告或原始发布落点后，才可升级为 confirmed；否则最多保留为 watch/tentative。"
+  },
+  "primarySources": [
+    { "name": "OpenAI", "type": "official", "url": "https://openai.com/" },
+    { "name": "Anthropic", "type": "official", "url": "https://www.anthropic.com/news" },
+    { "name": "Google I/O", "type": "official", "url": "https://io.google/" },
+    { "name": "Apple WWDC", "type": "official", "url": "https://developer.apple.com/wwdc/" },
+    { "name": "Microsoft Build", "type": "official", "url": "https://build.microsoft.com/" },
+    { "name": "NVIDIA GTC", "type": "official", "url": "https://www.nvidia.com/gtc/" },
+    { "name": "AWS re:Invent", "type": "official", "url": "https://aws.amazon.com/events/reinvent/" },
+    { "name": "ICLR Future Meetings", "type": "official", "url": "https://iclr.cc/Conferences/FutureMeetings" },
+    { "name": "ICML", "type": "official", "url": "https://icml.cc/Conferences/2026" },
+    { "name": "NeurIPS Future Meetings", "type": "official", "url": "https://nips.cc/Conferences/FutureMeetings" },
+    { "name": "AAAI", "type": "official", "url": "https://aaai.org/conference/aaai/aaai-26/" },
+    { "name": "IJCAI", "type": "official", "url": "https://2026.ijcai.org/" }
+  ],
+  "auxiliarySources": [
+    {
+      "name": "机器之心",
+      "channel": "wechat",
+      "role": ["事件发现", "模型发布线索", "学术与产业动态"],
+      "confidence": "high",
+      "notes": "适合发现新事件和重要发布，但仍需回到官方页面确认日期。"
+    },
+    {
+      "name": "新智元",
+      "channel": "wechat",
+      "role": ["热点发现", "模型发布线索", "传播角度"],
+      "confidence": "medium-high",
+      "notes": "适合抓热点和爆点，不适合作为硬日期唯一依据。"
+    },
+    {
+      "name": "量子位",
+      "channel": "wechat",
+      "role": ["热点发现", "大众传播", "选题灵感"],
+      "confidence": "medium-high",
+      "notes": "适合热点雷达与内容选题，日历确认仍需官方回查。"
+    },
+    {
+      "name": "智东西",
+      "channel": "wechat",
+      "role": ["产业观察", "机器人/硬件线索", "大会发布跟踪"],
+      "confidence": "high",
+      "notes": "对硬件、机器人和产业会议信号更有价值。"
+    },
+    {
+      "name": "甲子光年",
+      "channel": "wechat",
+      "role": ["产业分析", "公司动态", "商业化趋势"],
+      "confidence": "medium-high",
+      "notes": "更适合做赛道与商业价值判断，不一定最快。"
+    },
+    {
+      "name": "人工智能学家",
+      "channel": "wechat",
+      "role": ["研究补充", "技术深度", "学术背景"],
+      "confidence": "medium",
+      "notes": "适合作为深度补充，而非快讯主源。"
+    },
+    {
+      "name": "AI科技评论",
+      "channel": "wechat",
+      "role": ["技术与产业交叉", "专家观点", "研究补充"],
+      "confidence": "medium",
+      "notes": "适合补背景和解释，不适合单独确认事件。"
+    }
+  ],
+  "usageBuckets": {
+    "calendarDiscovery": ["机器之心", "新智元", "智东西"],
+    "modelReleaseRadar": ["机器之心", "新智元", "量子位"],
+    "industrySignals": ["智东西", "甲子光年", "AI科技评论"],
+    "xiaohongshuTopicMining": ["新智元", "量子位", "机器之心", "甲子光年"]
+  }
+}
